@@ -17,6 +17,7 @@ module.exports = React.createClass
   ticking: false
 
   propTypes:
+    parent: React.PropTypes.node
     children: PropTypes.any.isRequired
     disableInlineStyles: PropTypes.bool
     disable: PropTypes.bool
@@ -28,6 +29,7 @@ module.exports = React.createClass
     wrapperStyle: PropTypes.object
 
   getDefaultProps: ->
+    parent: -> window
     disableInlineStyles: false
     disable: false
     upTolerance: 5
@@ -45,20 +47,20 @@ module.exports = React.createClass
   componentDidMount: ->
     @setState height: @refs.inner.getDOMNode().offsetHeight
     unless @props.disable
-      window.addEventListener('scroll', @handleScroll)
+      @props.parent().addEventListener('scroll', @handleScroll)
 
   componentWillUnmount: ->
-    window.removeEventListener('scroll', @handleScroll)
+    @props.parent().removeEventListener('scroll', @handleScroll)
 
   componentWillReceiveProps: (nextProps) ->
     if nextProps.disable and not @props.disable
       @unfix()
 
       # Remove the event listener
-      window.removeEventListener('scroll', @handleScroll)
+      @props.parent().removeEventListener('scroll', @handleScroll)
 
     else if not nextProps.disable and @props.disable
-      window.addEventListener('scroll', @handleScroll)
+      @props.parent().addEventListener('scroll', @handleScroll)
 
   componentDidUpdate: (prevProps, prevState) ->
     # If children have changed, remeasure height.
@@ -115,10 +117,10 @@ module.exports = React.createClass
     @ticking = false
 
   getScrollY: ->
-    if window.pageYOffset != undefined
-      window.pageYOffset
-    else if window.scrollTop != undefined
-      window.scrollTop
+    if @props.parent().pageYOffset != undefined
+      @props.parent().pageYOffset
+    else if @props.parent().scrollTop != undefined
+      @props.parent().scrollTop
     else (document.documentElement or
       document.body.parentNode or
       document.body).scrollTop
